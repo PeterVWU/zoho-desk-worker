@@ -20,7 +20,7 @@ interface TicketData {
 	departmentId: string;
 	contactId: string;
 	description: string;
-	[key: string]: unknown;  // Allow additional fields
+	[key: string]: unknown;
 }
 
 interface ZohoErrorResponse {
