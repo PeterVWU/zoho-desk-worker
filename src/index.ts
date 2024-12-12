@@ -222,7 +222,7 @@ async function fetchAccessToken(env: Env): Promise<string> {
 	const response = await fetch(`https://${env.ZOHO_OAUTH_WORKER_URL}/token`, {
 		method: 'GET',
 	});
-
+	log('info', 'token url', `https://${env.ZOHO_OAUTH_WORKER_URL}/token`)
 	if (!response.ok) {
 		throw new Error(`Failed to fetch access token: ${response.statusText}`);
 	}
