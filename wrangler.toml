@@ -4,9 +4,14 @@ main = "src/index.ts"
 compatibility_date = "2024-12-05"
 compatibility_flags = ["nodejs_compat"]
 
+[[kv_namespaces]]
+binding = "ZOHO_TOKENS"
+id = "9787fdad4411428aadf21ec40282c34b"
+
 [vars]
-ZOHO_DESK_DOMAIN = "esk.zoho.com"
+ZOHO_DESK_DOMAIN = "desk.zoho.com"
 ZOHO_DESK_ORGID = "729742506"
+ZOHO_OAUTH_WORKER_URL = "zoho-oath-worker.info-ba2.workers.dev"
 
 # Workers Logs
 # Docs: https://developers.cloudflare.com/workers/observability/logs/workers-logs/
