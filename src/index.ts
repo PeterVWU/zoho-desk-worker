@@ -8,6 +8,8 @@ interface Env {
 
 	CLOUDTALK_USERNAME: string;
 	CLOUDTALK_PASSWORD: string;
+
+	ZOHO_OAUTH_WORKER: any
 }
 
 interface TicketData {
@@ -71,7 +73,7 @@ async function handleTicketCreation(request: Request, env: Env): Promise<Respons
 		log('info', 'Received ticket data', { ticketData });
 
 		// Get valid access token
-		const accessToken = await fetchAccessToken(env);
+		const accessToken = await env.ZOHO_OAUTH_WORKER.getAccessToken();
 		log('info', 'Retrieved valid Zoho access token');
 
 		let ticketDescription = "";
