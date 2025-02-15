@@ -8,7 +8,8 @@ interface Env {
 }
 
 interface TicketData {
-	name: string
+	store: string;
+	name: string;
 	email: string;
 	subject: string;
 	orderNumber?: string;
@@ -72,7 +73,7 @@ async function handleTicketCreation(request: Request, env: Env): Promise<Respons
 		let ticketDescription = ticketData.details;
 		const orderNumberString = ticketData.orderNumber ? `Order number: ${ticketData.orderNumber} \n\n` : ''
 		ticketDescription = orderNumberString + ticketDescription
-		const ticketSubject = `${ticketData.subject} - ${ticketData.name}`
+		const ticketSubject = `${ticketData.store} | ${ticketData.subject} | ${ticketData.name}`
 		// Create ticket in Zoho Desk
 		const ticketResponse = await fetch(`https://${env.ZOHO_DESK_DOMAIN}/api/v1/tickets`, {
 			method: 'POST',
