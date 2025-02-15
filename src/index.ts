@@ -83,7 +83,7 @@ async function handleTicketCreation(request: Request, env: Env): Promise<Respons
 			},
 			body: JSON.stringify({
 				subject: ticketSubject,
-				emial: ticketData.email,
+				email: ticketData.email,
 				description: ticketDescription,
 				contact: {
 					firstName: ticketData.name,
