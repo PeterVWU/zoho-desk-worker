@@ -70,10 +70,9 @@ async function handleTicketCreation(request: Request, env: Env): Promise<Respons
 		const accessToken = await env.ZOHO_OAUTH_WORKER.getAccessToken();
 		log('info', 'Retrieved valid Zoho access token');
 
-		let ticketDescription = ticketData.details;
-		const orderNumberString = ticketData.orderNumber ? `Order number: ${ticketData.orderNumber} \n\n` : ''
-		ticketDescription = orderNumberString + ticketDescription
+		let ticketDescription = createDetailedDescription(ticketData);
 		const ticketSubject = `${ticketData.store} | ${ticketData.subject} | ${ticketData.name}`
+
 		// Create ticket in Zoho Desk
 		const ticketResponse = await fetch(`https://${env.ZOHO_DESK_DOMAIN}/api/v1/tickets`, {
 			method: 'POST',
@@ -112,3 +111,16 @@ async function handleTicketCreation(request: Request, env: Env): Promise<Respons
 		});
 	}
 }
+
+// Create detailed ticket description
+function createDetailedDescription(ticketData: TicketData,): string {
+	const descriptionArray = [];
+
+	if (ticketData.orderNumber) {
+		descriptionArray.push(`<div><strong>Order Number:</strong>${ticketData.orderNumber}</div>`);
+	}
+	descriptionArray.push(`<div><strong>Detail:</strong> ${ticketData.details}</div>`);
+
+	return descriptionArray.join('<br/>');
+}
+
