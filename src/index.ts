@@ -61,7 +61,7 @@ export default {
 		try {
 			// Ticket creation route
 			if (url.pathname === '/tickets') {
-				ctx.waitUntil(handleTicketCreation(request, env))
+				await handleTicketCreation(request, env)
 				const resp = new Response(JSON.stringify({ status: 'processing', message: 'Request received' }), {
 					status: 202,
 					headers: { 'Content-Type': 'application/json' },
