@@ -28,12 +28,22 @@ function log(level: 'info' | 'warn' | 'error', message: string, data?: any): voi
 	console[level](JSON.stringify(logEntry));
 }
 
-const ALLOWED_ORIGIN = 'https://misthub.com';
+// Define allowed origins
+const ALLOWED_ORIGINS = [
+	'https://misthub.com',
+	'https://ejuices.com' // Add more allowed URLs as needed
+];
 
-// Helper function to add CORS headers
-function withCorsHeaders(response: Response): Response {
+// Helper function to add CORS headers by checking the request's Origin header
+function withCorsHeaders(request: Request, response: Response): Response {
 	const newHeaders = new Headers(response.headers);
-	newHeaders.set('Access-Control-Allow-Origin', ALLOWED_ORIGIN);
+	const requestOrigin = request.headers.get('Origin');
+	if (requestOrigin && ALLOWED_ORIGINS.includes(requestOrigin)) {
+		newHeaders.set('Access-Control-Allow-Origin', requestOrigin);
+	} else {
+		// Fallback: you can either set a default or skip setting the header.
+		newHeaders.set('Access-Control-Allow-Origin', ALLOWED_ORIGINS[0]);
+	}
 	return new Response(response.body, {
 		status: response.status,
 		statusText: response.statusText,
@@ -47,30 +57,31 @@ export default {
 
 		// Handle CORS preflight OPTIONS request
 		if (request.method === 'OPTIONS') {
-			return new Response(null, {
+			const optionsResp = new Response(null, {
 				status: 204,
 				headers: {
-					'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
+					'Access-Control-Allow-Origin': ALLOWED_ORIGINS[0],
 					'Access-Control-Allow-Methods': 'POST, OPTIONS',
 					'Access-Control-Allow-Headers': 'Content-Type',
 					'Access-Control-Max-Age': '86400'
 				}
 			});
+			return withCorsHeaders(request, optionsResp);
 		}
 
 		try {
 			// Ticket creation route
 			if (url.pathname === '/tickets') {
-				await handleTicketCreation(request, env)
+				await handleTicketCreation(request, env);
 				const resp = new Response(JSON.stringify({ status: 'processing', message: 'Request received' }), {
 					status: 202,
 					headers: { 'Content-Type': 'application/json' },
 				});
-				return withCorsHeaders(resp);
+				return withCorsHeaders(request, resp);
 			}
 
 			const notFoundResp = new Response('Not found', { status: 404 });
-			return withCorsHeaders(notFoundResp);
+			return withCorsHeaders(request, notFoundResp);
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 			log('error', 'Unhandled exception in fetch handler', { error: errorMessage });
@@ -78,7 +89,7 @@ export default {
 				status: 500,
 				headers: { 'Content-Type': 'application/json' }
 			});
-			return withCorsHeaders(errResp);
+			return withCorsHeaders(request, errResp);
 		}
 	}
 };
@@ -87,11 +98,12 @@ export default {
 async function handleTicketCreation(request: Request, env: Env): Promise<Response> {
 	if (request.method !== 'POST') {
 		log('warn', `Invalid request method: ${request.method}`);
-		return new Response('Method not allowed', { status: 405 });
+		// Wrap the error response with CORS headers too
+		return withCorsHeaders(request, new Response('Method not allowed', { status: 405 }));
 	}
 
 	try {
-		log('info', 'handleTicketCreation header', { headers: JSON.stringify(request.headers) })
+		log('info', 'handleTicketCreation header', { headers: JSON.stringify(request.headers) });
 		// Get ticket data from request
 		const ticketData = await request.json() as TicketData;
 		log('info', 'Received ticket data', { ticketData });
@@ -101,7 +113,7 @@ async function handleTicketCreation(request: Request, env: Env): Promise<Respons
 		log('info', 'Retrieved valid Zoho access token');
 
 		let ticketDescription = createDetailedDescription(ticketData);
-		const ticketSubject = `${ticketData.store} | ${ticketData.subject} | ${ticketData.name}`
+		const ticketSubject = `${ticketData.store} | ${ticketData.subject} | ${ticketData.name}`;
 
 		// Create ticket in Zoho Desk
 		const ticketResponse = await fetch(`https://${env.ZOHO_DESK_DOMAIN}/api/v1/tickets`, {
@@ -131,7 +143,7 @@ async function handleTicketCreation(request: Request, env: Env): Promise<Respons
 			status: ticketResponse.status,
 			headers: { 'Content-Type': 'application/json' }
 		});
-		return withCorsHeaders(resp);
+		return withCorsHeaders(request, resp);
 
 	} catch (error) {
 		const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -140,12 +152,12 @@ async function handleTicketCreation(request: Request, env: Env): Promise<Respons
 			status: 500,
 			headers: { 'Content-Type': 'application/json' }
 		});
-		return withCorsHeaders(errResp);
+		return withCorsHeaders(request, errResp);
 	}
 }
 
 // Create detailed ticket description
-function createDetailedDescription(ticketData: TicketData,): string {
+function createDetailedDescription(ticketData: TicketData): string {
 	const descriptionArray = [];
 
 	if (ticketData.orderNumber) {
