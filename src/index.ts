@@ -31,7 +31,8 @@ function log(level: 'info' | 'warn' | 'error', message: string, data?: any): voi
 // Define allowed origins
 const ALLOWED_ORIGINS = [
 	'https://misthub.com',
-	'https://ejuices.com' // Add more allowed URLs as needed
+	'https://ejuices.com',
+	'https://www.ejuices.com'
 ];
 
 // Helper function to add CORS headers by checking the request's Origin header
