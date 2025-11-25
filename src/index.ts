@@ -36,7 +36,8 @@ const ALLOWED_ORIGINS = [
 	'https://eliquid.com',
 	'https://www.eliquid.com',
 	'https://ejuices.co',
-	'https://www.ejuices.co'
+	'https://www.ejuices.co',
+	'https://alohasunvapor.com'
 ];
 
 // Helper function to add CORS headers by checking the request's Origin header
